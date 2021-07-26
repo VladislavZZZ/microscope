@@ -2,44 +2,8 @@ import re
 import pymorphy2
 
 eps = 0.00
-class Lexem:
-
-    def __init__(self, text, part_of_speech) -> None:
-        self.text = text
-        self.part_of_speech = part_of_speech
 
 
-def set_to_str(cur_set, same_line=True):
-    res = ''
-    for entity in cur_set:
-        if same_line:
-            res += ', ' + entity
-        else:
-            res += ' ' + entity[0] +' - ' +str(entity[1]) +'/'+str(len(requests))+' ('+str(round(entity[1]/len(requests)*100, 4))+'%)\n'
-    return res + ';'
-
-
-main_words = {
-    'перчатка'
-}
-
-sizes = {
-    'xs',
-    's',
-    'm',
-    'м',
-    'l',
-    'xl',
-    'xxl'
-}
-
-measure_types = {
-    'размер',
-    'номер'
-    'мм',
-    'см',
-    'шт'
-}
 
 if __name__ == '__main__':
     morph = pymorphy2.MorphAnalyzer()
