@@ -12,3 +12,32 @@ class IBA_Synonyms:
         print(resp.status_code)
         data = resp.json()
         print(data)
+        return data
+
+    def get_word_synonyms(self, word: str):
+        resp = requests.get(self.root_path+'all/'+word)
+        print(resp.status_code)
+        data = resp.json()
+        print(data)
+        return data
+
+    def add_new_word_group(self, word: str):
+        resp = requests.post(self.root_path+'add/'+word+'&')
+        print(resp.status_code)
+        data = resp.json()
+        print(data)
+        return data
+
+    def add_synonym_to_word(self, word: str, synonym: str):
+        resp = requests.post(self.root_path + 'add/' + word + '&'+synonym)
+        print(resp.status_code)
+        data = resp.json()
+        print(data)
+        return data
+
+    def delete_word(self, word: str):
+        resp = requests.delete(self.root_path + 'delete/' + word)
+        print(resp.status_code)
+        data = resp.json()
+        print(data)
+        return data

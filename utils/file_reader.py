@@ -8,6 +8,14 @@ class FileReader:
     def __open_file(self):
         self.file = open(self.filepath,'r')
 
+    def read_lexems(self):
+        count = int(self.file.readline())
+        lexems = []
+        for i in range(count):
+            lexem_line = self.file.readline().split(' ')
+            lexems.append(lexem_line)
+        return lexems
+
     def read_lines(self):
         return self.file.readlines()
 
