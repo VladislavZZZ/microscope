@@ -90,14 +90,31 @@ if __name__ == '__main__':
     #     for entry in synonyms.items():
     #         out.write(entry[0]+' -> '+str(entry[1])+'\n')
     api = IBA_Synonyms()
-    in_txt = FileReader('resources/generated_requests.txt')
-    out_txt = FileWriter('results/lexems_without_syns.txt')
+    in_txt = FileReader('resources/products_microscope_test.txt')
+    out_txt = FileWriter('results/products_microscope_without_syns.txt')
     parser = TextParser()
     lexems = parser.get_lexems_from_text(in_txt.read_lines())
     in_txt.close()
     out_txt.save_lexems(lexems)
     out_txt.close()
-    out_txt = FileWriter('results/lexems_with_syns.txt')
-    changed_lexems = change_lexems_by_synonym(lexems, 0)
-    out_txt.save_lexems(changed_lexems)
+
+    out_txt = FileWriter('results/products_microscope_raw_frequency.txt')
+    raw_occurrence = parser.get_percentage_of_occurrence(lexems)
+    out_txt.save_dict(raw_occurrence)
     out_txt.close()
+
+
+    out_txt = FileWriter('results/products_microscope_frequency.txt')
+    occurrence = parser.remove_rare(raw_occurrence, len(lexems))
+    out_txt.save_dict(occurrence)
+    out_txt.close()
+
+    out_txt = FileWriter('results/products_microscope_with_non_meeting_lexems.txt')
+    with_no_common = parser.find_words_with_no_common(occurrence,lexems)
+    out_txt.save_dict(with_no_common)
+    out_txt.close()
+
+    # out_txt = FileWriter('results/products_microscope_with_syns.txt')
+    # changed_lexems = change_lexems_by_synonym(lexems, 0)
+    # out_txt.save_lexems(changed_lexems)
+    # out_txt.close()

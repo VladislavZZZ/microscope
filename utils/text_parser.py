@@ -82,16 +82,17 @@ class TextParser:
                 if lexem not in occurrence.keys():
                     occurrence[lexem] = 0
                 occurrence[lexem] += 1
-        return occurrence
+        sorted_occurrence = dict(sorted(occurrence.items(), key=lambda kv: (kv[1], kv[0]), reverse=True))
+        return sorted_occurrence
 
-    def remove_rare(self, occurence, requests_count,  eps=0.01):
-        main_lexems = sorted(occurence.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
+    def remove_rare(self, occurence: dict, requests_count,  eps=0.01):
+        main_lexems = list(occurence.items())
         main_lexems = [main_lexem for main_lexem in main_lexems if main_lexem[1] > eps * requests_count]
-        return main_lexems
+        return dict(main_lexems)
 
     def find_words_with_no_common(self, occurence, all_normed_sentences):
         words_with_no_common = dict()
-        lexems = occurence.keys()
+        lexems = list(occurence.keys())
         for i, lexem in enumerate(lexems):
             lexems_copy = lexems.copy()
             lexems_copy.remove(lexem)
