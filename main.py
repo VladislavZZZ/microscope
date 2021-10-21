@@ -2,7 +2,21 @@ from utils.file_reader import FileReader
 from utils.file_writer import FileWriter
 from utils.text_parser import TextParser
 from utils.synonyms_api import IBA_Synonyms
+from utils.synonyms_excel import SynonymsExcel
+from fonetika.soundex import RussianSoundex
+from  fonetika.distance import PhoneticsInnerLanguageDistance
+import datetime
 
+
+# CONSTANTS
+MINIMUM_RAW_OCCURANCE = 1
+COUNT_LEXEMS_NOT_PROC_FONETIKA = 1000
+SYNONYMS_EDGE = 0.001
+MEETING_EDGE = 0.2
+VECT_DIST_1 = 2.3
+VECT_DIST_2 = 2.5# CONSTANTS
+
+datetime = datetime.datetime
 
 def change_lexems_by_synonym(lexems, number_of_synonym:int):
     new_lexems = []
@@ -13,105 +27,99 @@ def change_lexems_by_synonym(lexems, number_of_synonym:int):
             new_line.append(synonym)
         new_lexems.append(new_line)
     return new_lexems
+
+
 if __name__ == '__main__':
-    # morph = pymorphy2.MorphAnalyzer()
-    # main_lexems = dict()
-    # words_len = 0
-    # all_normed_senteces = []
-    # with open('results/new_out.txt', 'w+') as out:
-    #     with open('resources/generated_requests.txt', 'r') as req_file:
-    #         requests = req_file.readlines()
-    #         count = 0
-    #         for i, request in enumerate(requests):
-    #             words_len += 1
-    #             splitted_words = re.split('[,.\+](?!\d)|[^\w.,\\\/]+', request.lower())
-    #             low_cased_norm_words = [word for word in splitted_words if word != '']
-    #             # print(low_cased_norm_words)
-    #             morph_norm_words = [morph.parse(word)[0].normal_form for word in low_cased_norm_words]
-    #             morph_norm_words = list(dict.fromkeys(morph_norm_words))
-    #             # main_word = None
-    #             # for main_word in main_words:
-    #             #     for word in morph_norm_words:
-    #             #         if re.search(main_word, word):
-    #             #             main_word = word
-    #             # if not main_word:
-    #             #     continue
-    #             word_num = 0
-    #             full_normed_sentence = []
-    #             while word_num < len(morph_norm_words):
-    #                 norm_word = morph_norm_words[word_num]
-    #                 parsed = morph.parse(norm_word)
-    #                 # print(str(parsed[0].normal_form) + ' -' + str(parsed[0].tag))
-    #                 part_of_speech = re.split('[ ,]+', str(parsed[0].tag))[0]
-    #
-    #                 if norm_word in measure_types:
-    #                     word_num += 1
-    #                     continue
-    #
-    #                 if part_of_speech == 'PRCL' or part_of_speech == 'PREP' or part_of_speech == 'CONJ':
-    #                     word_num += 1
-    #                     continue
-    #
-    #                 # if part_of_speech == 'ADJF' or part_of_speech == 'ADJS':
-    #                 #     characteristicts.add(norm_word)
-    #                 if norm_word in sizes or part_of_speech == 'NUMB':
-    #                     if word_num - 1 >= 0 and morph_norm_words[word_num - 1] in measure_types:
-    #                         norm_word = morph_norm_words[word_num - 1] + ' ' + norm_word
-    #                     if word_num + 1 < len(morph_norm_words) and morph_norm_words[word_num + 1] in measure_types:
-    #                         norm_word = norm_word + ' ' + morph_norm_words[word_num + 1]
-    #                         word_num += 1
-    #                 #     measures.add(norm_word)
-    #                 # else:
-    #                 full_normed_sentence.append(norm_word)
-    #                 if norm_word not in main_lexems.keys():
-    #                     main_lexems[norm_word] = 0
-    #                 main_lexems[norm_word] += 1
-    #                 word_num += 1
-    #             all_normed_senteces.append(full_normed_sentence)
-    #         main_lexems = sorted(main_lexems.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
-    #         main_lexems = [main_lexem for main_lexem in main_lexems if main_lexem[1] > eps*words_len]
-    #         out.write(str(len(main_lexems))+'\nLEXEMS:\n' + set_to_str(main_lexems, False))
-    #         most_usable_lexems = [entry[0] for entry in main_lexems]
-    #         synonyms = dict()
-    #         print(str(len(most_usable_lexems))+' MOST USABLE LEXEMES ')
-    #         for ij,most_usable_lexem in enumerate(most_usable_lexems):
-    #             print(str(ij+1)+") LEXEM ")
-    #             most_usable_lexems_copy = most_usable_lexems.copy()
-    #             most_usable_lexems_copy.remove(most_usable_lexem)
-    #             for i, norm_sentence in enumerate(all_normed_senteces):
-    #                 if i%5000==0:
-    #                     print('    '+str(i+1)+' sentences')
-    #                 if most_usable_lexem in norm_sentence:
-    #                     for normed_lexem in norm_sentence:
-    #                         if normed_lexem in most_usable_lexems_copy:
-    #                             most_usable_lexems_copy.remove(normed_lexem)
-    #             synonyms[most_usable_lexem] = most_usable_lexems_copy
-    # with open('results/synonyms.txt','w+') as out:
-    #     for entry in synonyms.items():
-    #         out.write(entry[0]+' -> '+str(entry[1])+'\n')
+    cur_datetime = datetime.now()
+    # cur_time = datetime.time()
     api = IBA_Synonyms()
-    in_txt = FileReader('resources/products_microscope_test.txt')
-    out_txt = FileWriter('results/products_microscope_without_syns.txt')
+
+    time1 = datetime.now()
+
+    # in_txt = FileReader('resources/fullrequests.txt')
+    # out_txt = FileWriter(f'results/{cur_datetime}_normalized_strings.txt')
+    # print('get_lexems_from_text')
     parser = TextParser()
-    lexems = parser.get_lexems_from_text(in_txt.read_lines())
-    in_txt.close()
-    out_txt.save_lexems(lexems)
-    out_txt.close()
+    # lexems = parser.get_lexems_from_text(in_txt.read_lines())
+    # in_txt.close()
+    # out_txt.save_lexems(lexems)
+    # out_txt.close()
+    #
+    # print('normalized_strings', datetime.now() - time1)
+    #
+    # time1 = datetime.now()
+    #
+    # out_txt = FileWriter(f'results/{cur_datetime}_1.normalized_strings_without_synonyms.txt')
+    # excel = SynonymsExcel('synonyms/synonyms_lexems.xlsx')
+    # synonyms = excel.get_synonyms(38)
+    # lexems = parser.replace_to_synonym(lexems, synonyms)
+    # out_txt.save_lexems(lexems)
+    # out_txt.close()
+    #
+    fr = FileReader('results/2021-09-10 20:01:35.285461_normalized_strings_without_synonyms.txt')
+    lexems = fr.read_lexems()
+    fr.close()
 
-    out_txt = FileWriter('results/products_microscope_raw_frequency.txt')
+    out_txt = FileWriter(f'results/{cur_datetime}_2.unique_lexems_ABS.txt')
+    print('get_percentage_of_occurrence')
     raw_occurrence = parser.get_percentage_of_occurrence(lexems)
-    out_txt.save_dict(raw_occurrence)
+    out_txt.save_dict_with_stat(raw_occurrence)
     out_txt.close()
 
-
-    out_txt = FileWriter('results/products_microscope_frequency.txt')
+    out_txt = FileWriter(f'results/{cur_datetime}_5.unique_lexems_REL.txt')
+    print('remove_rare')
     occurrence = parser.remove_rare(raw_occurrence, len(lexems))
-    out_txt.save_dict(occurrence)
+    out_txt.save_dict_with_stat(occurrence)
     out_txt.close()
 
-    out_txt = FileWriter('results/products_microscope_with_non_meeting_lexems.txt')
+    out_txt = FileWriter(f'results/{cur_datetime}_6a.meetings_matrix.txt')
     with_no_common = parser.find_words_with_no_common(occurrence,lexems)
-    out_txt.save_dict(with_no_common)
+    out_txt.save_matrix_with_full_percentage(with_no_common, len(lexems))
+    out_txt.close()
+
+
+    out_txt = FileWriter(f'results/{cur_datetime}_6.meetings_matrix.txt')
+    with_no_common = parser.find_words_with_no_common(occurrence, lexems)
+    out_txt.save_matrix_with_percentage(with_no_common)
+    out_txt.close()
+
+    # fr = FileReader('results/2021-09-10 20:01:35.285461_normalized_strings_without_synonyms.txt')
+    # lexems = fr.read_lexems()
+    # fr.close()
+    #
+    #
+    # fr = FileReader('results/2021-09-21 13:45:24.640982_meetings_matrix.txt')
+    # with_no_common = fr.get_matrix_with_percentage()
+    # fr.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_7a.meetings_vectors.txt')
+    vectorsA = parser.get_synonyms_full_vectors(with_no_common,len(lexems),SYNONYMS_EDGE)
+    out_txt.save_meeting_vectors(meeting_vectors=vectorsA)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_7.meetings_vectors.txt')
+    vectors = parser.get_synonyms_vectors(with_no_common, SYNONYMS_EDGE)
+    out_txt.save_meeting_vectors(meeting_vectors=vectors)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_8a.meetings_vectors_distance.txt')
+    dist_vectors_matr = parser.get_dist_between_vectors(vectorsA)
+    out_txt.save_dist_matrix(dist_vectors_matr)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_8.meetings_vectors_distance.txt')
+    dist_vectors_matr = parser.get_dist_between_vectors(vectors)
+    out_txt.save_dist_matrix(dist_vectors_matr)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_9.similar_lexems_with_edge_{VECT_DIST_1}.txt')
+    lexems_similarity = parser.find_similar_lexems_by_dist(dist_vectors_matr,list(occurrence.keys()),VECT_DIST_1)
+    out_txt.save_lexem_groups(lexems_similarity)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_9.similar_lexems_with_edge_{VECT_DIST_2}.txt')
+    lexems_similarity = parser.find_similar_lexems_by_dist(dist_vectors_matr, list(occurrence.keys()), VECT_DIST_2)
+    out_txt.save_lexem_groups(lexems_similarity)
     out_txt.close()
 
     # out_txt = FileWriter('results/products_microscope_with_syns.txt')
