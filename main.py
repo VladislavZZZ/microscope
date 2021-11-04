@@ -13,8 +13,9 @@ MINIMUM_RAW_OCCURANCE = 1
 COUNT_LEXEMS_NOT_PROC_FONETIKA = 1000
 SYNONYMS_EDGE = 0.001
 MEETING_EDGE = 0.2
-VECT_DIST_1 = 2.3
-VECT_DIST_2 = 2.5# CONSTANTS
+VECT_DIST_1 = 0.7
+VECT_DIST_2 = 0.9
+MAIN_LEXEMS = ['перчатка']
 
 datetime = datetime.datetime
 
@@ -59,6 +60,8 @@ if __name__ == '__main__':
     fr = FileReader('results/2021-09-10 20:01:35.285461_normalized_strings_without_synonyms.txt')
     lexems = fr.read_lexems()
     fr.close()
+
+    lexems = parser.delete_main_lexem(lexems, MAIN_LEXEMS)
 
     out_txt = FileWriter(f'results/{cur_datetime}_2.unique_lexems_ABS.txt')
     print('get_percentage_of_occurrence')
@@ -118,6 +121,26 @@ if __name__ == '__main__':
     out_txt.close()
 
     out_txt = FileWriter(f'results/{cur_datetime}_9.similar_lexems_with_edge_{VECT_DIST_2}.txt')
+    lexems_similarity = parser.find_similar_lexems_by_dist(dist_vectors_matr, list(occurrence.keys()), VECT_DIST_2)
+    out_txt.save_lexem_groups(lexems_similarity)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_10.meetings_vectors_decimal.txt')
+    vectors = parser.get_synonyms_vectors_decimal(with_no_common)
+    out_txt.save_meeting_vectors(meeting_vectors=vectors)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_11.meetings_vectors_distance.txt')
+    dist_vectors_matr = parser.get_dist_between_vectors(vectors)
+    out_txt.save_dist_matrix(dist_vectors_matr)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_12.similar_lexems_with_edge_{VECT_DIST_1}.txt')
+    lexems_similarity = parser.find_similar_lexems_by_dist(dist_vectors_matr, list(occurrence.keys()), VECT_DIST_1)
+    out_txt.save_lexem_groups(lexems_similarity)
+    out_txt.close()
+
+    out_txt = FileWriter(f'results/{cur_datetime}_12.similar_lexems_with_edge_{VECT_DIST_2}.txt')
     lexems_similarity = parser.find_similar_lexems_by_dist(dist_vectors_matr, list(occurrence.keys()), VECT_DIST_2)
     out_txt.save_lexem_groups(lexems_similarity)
     out_txt.close()

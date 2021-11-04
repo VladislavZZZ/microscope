@@ -67,7 +67,9 @@ class FileWriter:
                 self.file.write(' ')
             self.file.write('[')
             for v  in val:
-                self.file.write(str(v)+' ')
+                self.file.write(str(round(v,3)))
+                for kk in range(6 - len(str(round(v,3)))):
+                    self.file.write(' ')
             self.file.write(']\n')
 
     def save_dist_matrix(self, matrix):

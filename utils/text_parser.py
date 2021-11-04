@@ -60,6 +60,17 @@ class TextParser:
             all_lexems.append(self._get_lexems_from_sentence(sentence))
         return all_lexems
 
+    def delete_main_lexem(self,all_lexems, MAIN_LEXEMS):
+        cleared_all_lexems = []
+        for lexems in all_lexems:
+            cleared_lexems = []
+            for lexem in lexems:
+                if lexem not in MAIN_LEXEMS:
+                    cleared_lexems.append(lexem)
+            cleared_all_lexems.append(cleared_lexems)
+        return cleared_all_lexems
+
+
     def _get_lexems_from_sentence(self, sentence):
         splitted_words = re.split('[,.\+](?!\d)|[^\w.,\\\/]+', sentence.lower())
         low_cased_norm_words = [word for word in splitted_words if word != '']
@@ -144,6 +155,21 @@ class TextParser:
                 for i, entry in enumerate(val[1]):
                     if entry[0] == lex and entry[1] / count < edge:
                         vector[i] = 1
+            vector_dict[key] = vector
+        for i in range(len(keys)):
+            vector_dict[keys[i]].insert(i, 1)
+        return vector_dict
+
+    def get_synonyms_vectors_decimal(self, dict_of_syns: dict):
+        vector_dict = dict()
+        keys = list(dict_of_syns.keys())
+        for key, val in dict_of_syns.items():
+            vector = [0. for i in range(len(keys) - 1)]
+            count = val[0]
+            for lex in keys:
+                for i, entry in enumerate(val[1]):
+                    if entry[0] == lex :
+                        vector[i] = entry[1] / count
             vector_dict[key] = vector
         for i in range(len(keys)):
             vector_dict[keys[i]].insert(i, 1)
