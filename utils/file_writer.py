@@ -84,6 +84,15 @@ class FileWriter:
                     self.file.write(' ')
             self.file.write('\n')
 
+    def save_elasticSearch_results(self, occurrance: dict,lexems_info:dict):
+        self.file.write(str(len(occurrance)))
+        for key,val in occurrance.items():
+            self.file.write('\n')
+            self.file.write((key+'('+lexems_info[key][1]+')'+'-> ['))
+            for line in val:
+                self.file.write('('+str(round(line[0],4)) + " ; " + line[1]+'), ')
+            self.file.write(']')
+
     def save_lexem_groups(self, lexem_groups:dict):
         self.file.write(str(len(lexem_groups))+'\n')
         for key, vals in lexem_groups.items():
