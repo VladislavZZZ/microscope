@@ -7,14 +7,11 @@ from utils.file_writer import FileWriter
 datetime = datetime.datetime
 
 
-
-
-
 def send_query(es: Elasticsearch, query: dict, index: str, size=1000, from_index=0):
     return es.search(index=index, query=query, size=size, from_=from_index)
 
 
-def clear_similar_words(es: Elasticsearch, index: str,text_field:str, occurence: dict, num_of_non_proc_lexems):
+def clear_similar_words(es: Elasticsearch, index: str, text_field: str, occurence: dict, num_of_non_proc_lexems):
     lexems = list(occurence.keys())
     pure_lexems = lexems[:num_of_non_proc_lexems]
     lexems_info = dict()
@@ -24,15 +21,16 @@ def clear_similar_words(es: Elasticsearch, index: str,text_field:str, occurence:
         q = {"match": {
             text_field: pure_lexem
         }}
-        res = send_query(es,q,index)
+        res = send_query(es, q, index)
         if res['timed_out']:
-            print('time out on query '+pure_lexem)
+            print('time out on query ' + pure_lexem)
             return dict()
         for r in res['hits']['hits']:
-            pure_lexem_similarity.append((r['_score'],r['_source'][text_field]))
+            pure_lexem_similarity.append((r['_score'], r['_source'][text_field]))
         lexems_info[pure_lexem] = (res['hits']['total']['value'], res['hits']['total']['relation'])
         result[pure_lexem] = pure_lexem_similarity
     return result, lexems_info
+
 
 def get_norm_requests(parser: TextParser):
     time1 = datetime.now()
@@ -77,9 +75,9 @@ if __name__ == '__main__':
     lexems = get_norm_requests(parser)
     raw_occurrence = parser.get_percentage_of_occurrence(lexems)
     occurrence = parser.remove_rare(raw_occurrence, len(lexems))
-    res, info = clear_similar_words(es, 'lexems','lexem', occurrence, len(occurrence.keys()))
+    res, info = clear_similar_words(es, 'lexems', 'lexem', occurrence, len(occurrence.keys()))
 
-    out_txt.save_elasticSearch_results(res,info)
+    out_txt.save_elasticSearch_results(res, info)
     out_txt.close()
 
     # q = {"match": {
@@ -88,7 +86,6 @@ if __name__ == '__main__':
     #
     # res = send_query(es,q,'lexems')
     # print("done")
-
 
 # inp = FileReader('resources/fullrequests.txt')
 #
